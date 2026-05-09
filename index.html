@@ -3,20 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SYSTEM DECRYPTING...</title>
+    <title>Welcome to the Portal</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: black; overflow: hidden; touch-action: none; }
-        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 100; display: flex; justify-content: center; align-items: center; color: #00FF00; cursor: pointer; text-align: center; }
-        #ui { position: relative; z-index: 10; height: 100vh; display: none; flex-direction: column; justify-content: center; align-items: center; color: #00FF00; font-family: monospace; pointer-events: none; }
-        #timer { font-size: clamp(1.5rem, 5vw, 4rem); border: 2px solid #00FF00; padding: 20px; background: rgba(0,0,0,0.9); box-shadow: 0 0 20px #00FF00; text-align: center; }
-        #abort-btn { margin-top: 20px; padding: 10px 20px; border: 1px solid #00FF00; background: black; color: #00FF00; cursor: pointer; pointer-events: auto; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #f0f0f0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        
+        /* Normal Looking Welcome Screen */
+        #welcome-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #333; }
+        #start-btn { padding: 15px 40px; font-size: 1.2rem; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+
+        /* Hacker Elements (Hidden at first) */
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; display: none; }
+        #hacker-ui { position: relative; z-index: 10; height: 100vh; display: none; flex-direction: column; justify-content: center; align-items: center; color: #0f0; font-family: 'Courier New', monospace; pointer-events: none; }
+        #timer { font-size: 3.5rem; font-weight: bold; background: rgba(0,0,0,0.9); padding: 20px; border: 2px solid #0f0; box-shadow: 0 0 20px #0f0; text-align: center; }
+        #hacked-msg { position: fixed; top: 10%; font-size: 4rem; color: rgba(255, 0, 0, 0.7); font-weight: bold; z-index: 5; display: none; text-shadow: 0 0 15px red; }
+        
+        /* Abort Button (Hidden for 5 seconds) */
+        #abort-btn { display: none; margin-top: 30px; padding: 10px 20px; border: 2px solid #f00; background: black; color: #f00; cursor: pointer; pointer-events: auto; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="overlay" onclick="startSystem()"><h1>[ TAP TO INITIALIZE SYSTEM ]</h1></div>
+
+    <!-- Friendly Start Screen -->
+    <div id="welcome-screen">
+        <h1>Member Portal</h1>
+        <p>Please click below to access your account.</p>
+        <button id="start-btn" onclick="goHacker()">Enter Portal</button>
+    </div>
+
+    <div id="hacked-msg">YOU ARE HACKED</div>
     <canvas id="m"></canvas>
-    <div id="ui">
+
+    <div id="hacker-ui">
         <div id="timer">00d 00h 00m 00s</div>
         <button id="abort-btn" onclick="location.href='https://google.com'">ABORT SYSTEM</button>
     </div>
@@ -26,43 +43,57 @@
         const ctx = c.getContext("2d");
         const t = document.getElementById("timer");
 
-        function setupCanvas() {
-            const dpr = window.devicePixelRatio || 1;
-            c.width = window.innerWidth * dpr;
-            c.height = window.innerHeight * dpr;
-            ctx.scale(dpr, dpr);
-        }
+        function goHacker() {
+            // Hide welcome, show hacker stuff
+            document.getElementById("welcome-screen").style.display = "none";
+            document.getElementById("hacker-ui").style.display = "flex";
+            document.getElementById("hacked-msg").style.display = "block";
+            c.style.display = "block";
+            document.body.style.background = "black";
 
-        function startSystem() {
-            document.getElementById("overlay").style.display = "none";
-            document.getElementById("ui").style.display = "flex";
-            setupCanvas();
-
-            // Attempt Fullscreen (Works on most Android, some iPad)
+            // Trigger Fullscreen
             const doc = document.documentElement;
             if (doc.requestFullscreen) doc.requestFullscreen();
             else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
 
-            // Matrix Logic
+            setupMatrix();
+            startCountdown();
+
+            // Delay Abort Button
+            setTimeout(() => {
+                document.getElementById("abort-btn").style.display = "block";
+            }, 5000);
+        }
+
+        function setupMatrix() {
+            c.width = window.innerWidth;
+            c.height = window.innerHeight;
             const fontSize = 18;
-            const columns = Math.floor(window.innerWidth / fontSize);
+            const columns = Math.floor(c.width / fontSize);
             const drops = Array(columns).fill(0);
 
             function draw() {
-                ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
-                ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-                ctx.fillStyle = "#0F0";
+                // Background paint with very low opacity to keep 1s and 0s visible longer
+                ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+                ctx.fillRect(0, 0, c.width, c.height);
+
+                ctx.fillStyle = "#0f0";
                 ctx.font = fontSize + "px monospace";
+
                 for (let i = 0; i < drops.length; i++) {
-                    const text = Math.random() > 0.5 ? "1" : "0";
+                    const text = Math.floor(Math.random() * 2);
                     ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                    if (drops[i] * fontSize > window.innerHeight && Math.random() > 0.975) drops[i] = 0;
+                    
+                    if (drops[i] * fontSize > c.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
                     drops[i]++;
                 }
             }
-            setInterval(draw, 50);
+            setInterval(draw, 40);
+        }
 
-            // Countdown Logic
+        function startCountdown() {
             setInterval(() => {
                 const diff = new Date("May 19, 2026") - new Date();
                 const d = Math.floor(diff / 86400000);
@@ -72,7 +103,6 @@
                 t.innerText = `${d}d ${h}h ${m}m ${s}s`;
             }, 1000);
         }
-        window.onresize = setupCanvas;
     </script>
 </body>
 </html>
