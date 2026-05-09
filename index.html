@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>System Portal</title>
+    <title>Daily Countdown Tool</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
         
-        /* Warm & Friendly Start Screen */
+        /* Warm & Welcoming Countdown Intro */
         #start-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); 
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); 
             z-index: 100; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; cursor: pointer; 
         }
         
-        .welcome-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-        h1 { color: #ff6b6b; margin-bottom: 10px; }
-        p { color: #777; margin-bottom: 25px; }
+        .welcome-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 80%; }
+        h1 { color: #2e7d32; margin-bottom: 10px; }
+        p { color: #555; margin-bottom: 25px; line-height: 1.4; }
         #start-btn { 
-            padding: 15px 40px; background: #ff6b6b; 
+            padding: 15px 40px; background: #2e7d32; 
             color: white; border-radius: 50px; border: none;
             font-weight: bold; font-size: 1.2rem; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+            box-shadow: 0 4px 15px rgba(46,125,50,0.3);
         }
 
         /* Hacker Elements */
@@ -35,31 +35,31 @@
             color: #0f0; font-family: 'Courier New', monospace; pointer-events: none; 
         }
         
-        #hacked-text { font-size: 4.5rem; color: #f00; font-weight: bold; margin-bottom: 10px; text-shadow: 0 0 30px #f00; }
-        #timer { font-size: 3.5rem; font-weight: bold; border: 4px solid #0f0; padding: 20px; background: rgba(0,0,0,0.9); box-shadow: 0 0 40px #0f0; }
+        #hacked-text { font-size: clamp(3rem, 10vw, 6rem); color: #f00; font-weight: bold; margin-bottom: 10px; text-shadow: 0 0 30px #f00; }
+        #timer { font-size: clamp(1.5rem, 6vw, 4rem); font-weight: bold; border: 4px solid #0f0; padding: 20px; background: rgba(0,0,0,0.9); box-shadow: 0 0 40px #0f0; }
 
-        /* Bright Flashing Green Effect */
-        .strobe { animation: strobe-bg 0.15s infinite; }
+        /* Intense Flashing Green Strobe */
+        .strobe { animation: strobe-bg 0.1s infinite; }
         @keyframes strobe-bg {
             0% { background: black; }
-            50% { background: #006600; }
+            50% { background: #00FF00; } /* Maximum Brightness */
             100% { background: black; }
         }
 
         #abort-btn { 
-            display: none; margin-top: 40px; padding: 12px 35px; 
-            border: 2px solid #f00; background: black; color: #f00; 
-            cursor: pointer; pointer-events: auto; font-weight: bold; font-family: inherit;
+            display: none; margin-top: 40px; padding: 15px 40px; 
+            border: 3px solid #f00; background: black; color: #f00; 
+            cursor: pointer; pointer-events: auto; font-weight: bold; font-size: 1.1rem;
         }
     </style>
 </head>
 <body id="main-body">
 
-    <!-- Welcoming Screen -->
+    <!-- Welcoming Intro Screen -->
     <div id="start-overlay" onclick="triggerHack()">
         <div class="welcome-box">
-            <h1>Ready to Begin?</h1>
-            <p>Your workspace is prepared for launch.</p>
+            <h1>Personal Countdown Tool</h1>
+            <p>Welcome! This application will help you track the exact time remaining until your target date.</p>
             <button id="start-btn">Click to Start Program</button>
         </div>
     </div>
@@ -85,7 +85,7 @@
             document.getElementById("m").style.display = "block";
             document.getElementById("hacker-bg").classList.add("strobe");
 
-            // Fullscreen trigger
+            // Attempt Fullscreen
             const doc = document.documentElement;
             if (doc.requestFullscreen) doc.requestFullscreen();
             else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
@@ -93,10 +93,10 @@
             setupMatrix();
             startCountdown();
 
-            // 5 second delay for Abort Button
+            // Delay Abort Button by 7 SECONDS
             setTimeout(() => {
                 document.getElementById("abort-btn").style.display = "block";
-            }, 5000);
+            }, 7000);
         }
 
         function setupMatrix() {
@@ -107,10 +107,9 @@
             const drops = Array(columns).fill(0);
 
             function draw() {
-                // Low opacity black layer keeps old 1s and 0s visible longer
                 ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
                 ctx.fillRect(0, 0, c.width, c.height);
-                ctx.fillStyle = "#33ff33"; // Extra bright green
+                ctx.fillStyle = "#00FF00"; 
                 ctx.font = "bold " + fontSize + "px monospace";
 
                 for (let i = 0; i < drops.length; i++) {
