@@ -2,91 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>SYSTEM DECRYPTING</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DECRYPTING...</title>
     <style>
-        body { background: black; color: #00FF00; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; touch-action: none; }
-        canvas { position: fixed; top: 0; left: 0; z-index: -1; display: block; }
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 100; display: flex; justify-content: center; align-items: center; cursor: pointer; text-align: center; }
-        #timer-container { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; }
-        #timer { font-size: clamp(2rem, 8vw, 5rem); font-weight: bold; background: rgba(0,0,0,0.8); padding: 20px; border: 2px solid #00FF00; box-shadow: 0 0 20px #00FF00; z-index: 10; }
-        #exit-btn { display: none; margin-top: 30px; padding: 15px 30px; background: black; color: #00FF00; border: 1px solid #00FF00; cursor: pointer; font-family: 'Courier New', monospace; pointer-events: auto; }
-        .glitch { animation: shake 0.1s infinite; color: #FF0000 !important; border-color: #FF0000 !important; }
-        @keyframes shake { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(2px, -2px); } }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: black; overflow: hidden; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #ui { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #00FF00; font-family: monospace; pointer-events: none; }
+        #timer { font-size: 3rem; border: 2px solid #00FF00; padding: 20px; background: rgba(0,0,0,0.9); }
+        #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 100; display: flex; justify-content: center; align-items: center; color: #00FF00; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="overlay" onclick="startSystem()">
-        <h1>[ TAP TO INITIALIZE SYSTEM ]</h1>
-    </div>
-    <canvas id="matrix"></canvas>
-    <div id="timer-container">
-        <div id="timer">00d 00h 00m 00s</div>
-        <button id="exit-btn" onclick="location.reload()">ABORT SYSTEM</button>
+    <div id="start-screen" onclick="begin()"><h1>[ TAP TO START ]</h1></div>
+    <canvas id="m"></canvas>
+    <div id="ui">
+        <div id="timer">INITIALIZING...</div>
     </div>
 
     <script>
-        const canvas = document.getElementById('matrix');
-        const ctx = canvas.getContext('2d');
-        const timerDisplay = document.getElementById('timer');
+        const c = document.getElementById("m");
+        const ctx = c.getContext("2d");
+        const t = document.getElementById("timer");
 
-        function setupCanvas() {
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = window.innerWidth * dpr;
-            canvas.height = window.innerHeight * dpr;
-            canvas.style.width = window.innerWidth + 'px';
-            canvas.style.height = window.innerHeight + 'px';
-            ctx.scale(dpr, dpr);
-        }
-
-        const fontSize = 16;
-        let columns = window.innerWidth / fontSize;
-        let drops = Array(Math.floor(columns)).fill(1);
-
-        function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
-            ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-            ctx.fillStyle = "#00FF00";
-            ctx.font = fontSize + "px Courier New";
-            for(let i = 0; i < drops.length; i++) {
-                const text = Math.floor(Math.random() * 2);
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > window.innerHeight && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            }
-        }
-
-        function updateCountdown() {
-            const target = new Date("May 19, 2026 00:00:00").getTime();
-            const now = new Date().getTime();
-            const diff = target - now;
-            if (diff <= 0) { timerDisplay.innerHTML = "ACCESS GRANTED"; return; }
-            const d = Math.floor(diff / (86400000));
-            const h = Math.floor((diff % 86400000) / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            timerDisplay.innerHTML = `${d}d ${h}h ${m}m ${s}s`;
-            if (Math.random() > 0.98) {
-                timerDisplay.classList.add('glitch');
-                setTimeout(() => timerDisplay.classList.remove('glitch'), 100);
-            }
-        }
-
-        function startSystem() {
-            document.getElementById('overlay').style.display = 'none';
-            setupCanvas();
+        function begin() {
+            document.getElementById("start-screen").style.display = "none";
+            // Attempt Fullscreen
+            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+            else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen();
             
-            // Fullscreen trigger for mobile/tablets
-            const doc = document.documentElement;
-            if (doc.requestFullscreen) doc.requestFullscreen();
-            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+            // Set Canvas Size
+            c.width = window.innerWidth;
+            c.height = window.innerHeight;
+            
+            // Matrix Effect
+            const columns = Math.floor(c.width / 20);
+            const drops = Array(columns).fill(0);
 
-            setInterval(drawMatrix, 40);
-            setInterval(updateCountdown, 1000);
-            setTimeout(() => document.getElementById('exit-btn').style.display = 'block', 5000);
+            function draw() {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+                ctx.fillRect(0, 0, c.width, c.height);
+                ctx.fillStyle = "#0F0";
+                ctx.font = "20px monospace";
+                for (let i = 0; i < drops.length; i++) {
+                    const text = Math.floor(Math.random() * 2);
+                    ctx.fillText(text, i * 20, drops[i] * 20);
+                    if (drops[i] * 20 > c.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                }
+            }
+            setInterval(draw, 50);
+
+            // Countdown Logic
+            setInterval(() => {
+                const diff = new Date("May 19, 2026") - new Date();
+                const d = Math.floor(diff / 86400000);
+                const h = Math.floor((diff % 86400000) / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                t.innerText = `${d}d ${h}h ${m}m ${s}s`;
+            }, 1000);
         }
-
-        window.addEventListener('resize', setupCanvas);
     </script>
 </body>
 </html>
