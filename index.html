@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Daily Countdown Tool</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #000; }
         
-        /* Warm & Welcoming Countdown Intro */
+        /* Welcoming Intro Screen */
         #start-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); 
-            z-index: 100; display: flex; flex-direction: column; 
+            z-index: 200; display: flex; flex-direction: column; 
             justify-content: center; align-items: center; cursor: pointer; 
         }
         
@@ -33,27 +33,30 @@
             position: relative; z-index: 10; height: 100vh; display: none; 
             flex-direction: column; justify-content: center; align-items: center; 
             color: #0f0; font-family: 'Courier New', monospace; pointer-events: none; 
+            text-align: center;
         }
         
-        #hacked-text { font-size: clamp(3rem, 10vw, 6rem); color: #f00; font-weight: bold; margin-bottom: 10px; text-shadow: 0 0 30px #f00; }
-        #timer { font-size: clamp(1.5rem, 6vw, 4rem); font-weight: bold; border: 4px solid #0f0; padding: 20px; background: rgba(0,0,0,0.9); box-shadow: 0 0 40px #0f0; }
+        #hacked-text { font-size: clamp(1.5rem, 6vw, 4rem); color: #f00; font-weight: bold; margin-bottom: 10px; text-shadow: 0 0 30px #f00; padding: 20px; }
+        #timer { font-size: clamp(1rem, 4vw, 2.5rem); font-weight: bold; border: 4px solid #0f0; padding: 20px; background: rgba(0,0,0,0.9); box-shadow: 0 0 40px #0f0; }
+
+        /* Popup Box Style */
+        .popup-box {
+            position: absolute; padding: 8px 15px; background: black; border: 2px solid #0f0;
+            color: #0f0; font-family: 'Courier New', monospace; font-size: 13px; font-weight: bold;
+            z-index: 150; pointer-events: none; box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+            text-transform: uppercase;
+        }
 
         /* Intense Flashing Green Strobe */
         .strobe { animation: strobe-bg 0.1s infinite; }
         @keyframes strobe-bg {
             0% { background: black; }
-            50% { background: #00FF00; } /* Maximum Brightness */
+            50% { background: #00FF00; } 
             100% { background: black; }
-        }
-
-        #abort-btn { 
-            display: none; margin-top: 40px; padding: 15px 40px; 
-            border: 3px solid #f00; background: black; color: #f00; 
-            cursor: pointer; pointer-events: auto; font-weight: bold; font-size: 1.1rem;
         }
     </style>
 </head>
-<body id="main-body">
+<body>
 
     <!-- Welcoming Intro Screen -->
     <div id="start-overlay" onclick="triggerHack()">
@@ -64,11 +67,12 @@
         </div>
     </div>
 
+    <!-- Hidden Chaos Elements -->
     <div id="hacker-bg"></div>
     <canvas id="m"></canvas>
 
     <div id="ui">
-        <div id="hacked-text">U R HACKED for real now haha i can access your device from now </div>
+        <div id="hacked-text">SYSTEM COMPROMISED<br>U R HACKED</div>
         <div id="timer">00d 00h 00m 00s</div>
     </div>
 
@@ -76,54 +80,74 @@
         const c = document.getElementById("m");
         const ctx = c.getContext("2d");
         const t = document.getElementById("timer");
+        
+        let popupInterval;
+        let matrixInterval;
+        let countdownInterval;
 
         function triggerHack() {
+            // 1. Show Hacker UI
             document.getElementById("start-overlay").style.display = "none";
             document.getElementById("hacker-bg").style.display = "block";
             document.getElementById("ui").style.display = "flex";
             document.getElementById("m").style.display = "block";
             document.getElementById("hacker-bg").classList.add("strobe");
 
-            // Attempt Fullscreen
+            // 2. Fullscreen
             const doc = document.documentElement;
             if (doc.requestFullscreen) doc.requestFullscreen();
             else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
 
+            // 3. Start Loops
             setupMatrix();
             startCountdown();
+            popupInterval = setInterval(createPopup, 300); // Spawns box every 0.3s
+        }
 
-            // Delay Abort Button by 7 SECONDS
-            setTimeout(() => {
-                document.getElementById("abort-btn").style.display = "block";
-            }, 100000000000000000000000000000000000000000);
+        function createPopup() {
+            const box = document.createElement("div");
+            box.className = "popup-box";
+            const msgs = ["ACCESSING CAMERA", "ENCRYPTING FILES", "IP: 192.168.1.1", "U R HACKED", "DOWNLOADING DATA", "WIPING DRIVE"];
+            box.innerText = msgs[Math.floor(Math.random() * msgs.length)];
+            
+            // Random positioning
+            const x = Math.random() * (window.innerWidth - 150);
+            const y = Math.random() * (window.innerHeight - 50);
+            box.style.left = x + "px";
+            box.style.top = y + "px";
+            
+            document.body.appendChild(box);
+            
+            // Auto-cleanup popups every 3 seconds to avoid lag
+            setTimeout(() => { if(box) box.remove(); }, 3000);
         }
 
         function setupMatrix() {
             c.width = window.innerWidth;
             c.height = window.innerHeight;
-            const fontSize = 22;
+            const fontSize = 20;
             const columns = Math.floor(c.width / fontSize);
             const drops = Array(columns).fill(0);
 
             function draw() {
-                ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+                ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
                 ctx.fillRect(0, 0, c.width, c.height);
-                ctx.fillStyle = "#00FF00"; 
-                ctx.font = "bold " + fontSize + "px monospace";
+                ctx.fillStyle = "#0f0"; 
+                ctx.font = fontSize + "px monospace";
 
                 for (let i = 0; i < drops.length; i++) {
                     const text = Math.random() > 0.5 ? "1" : "0";
                     ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                    if (drops[i] * fontSize > c.height && Math.random() > 0.98) drops[i] = 0;
+                    if (drops[i] * fontSize > c.height && Math.random() > 0.975) drops[i] = 0;
                     drops[i]++;
                 }
             }
-            setInterval(draw, 35);
+            matrixInterval = setInterval(draw, 35);
         }
 
         function startCountdown() {
             const targetDate = new Date("May 19, 2026 00:00:00").getTime();
-            setInterval(() => {
+            countdownInterval = setInterval(() => {
                 const now = new Date().getTime();
                 const diff = targetDate - now;
                 const d = Math.floor(diff / 86400000);
@@ -133,6 +157,36 @@
                 t.innerText = `${d}d ${h}h ${m}m ${s}s`;
             }, 1000);
         }
+
+        // THE "EVERYTHING GOES" ESCAPE BUTTON
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                // 1. Stop all repeating scripts
+                clearInterval(popupInterval);
+                clearInterval(matrixInterval);
+                clearInterval(countdownInterval);
+
+                // 2. Remove all "Hacked" boxes immediately
+                const allPopups = document.querySelectorAll('.popup-box');
+                allPopups.forEach(box => box.remove());
+
+                // 3. Hide Hacker UI and reset background
+                document.getElementById("hacker-bg").style.display = "none";
+                document.getElementById("hacker-bg").classList.remove("strobe");
+                document.getElementById("ui").style.display = "none";
+                document.getElementById("m").style.display = "none";
+
+                // 4. Show the original welcome screen
+                document.getElementById("start-overlay").style.display = "flex";
+
+                // 5. Exit Fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        });
 
         window.onresize = () => { c.width = window.innerWidth; c.height = window.innerHeight; };
     </script>
