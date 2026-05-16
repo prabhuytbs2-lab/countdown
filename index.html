@@ -5,29 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Daily Countdown Tool</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #000; user-select: none; }
         
         /* Welcoming Intro Screen */
         #start-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
             z-index: 200; display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; cursor: pointer; 
+            justify-content: center; align-items: center;
         }
         
-        .welcome-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 80%; }
-        h1 { color: #2e7d32; margin-bottom: 10px; }
-        p { color: #555; margin-bottom: 25px; line-height: 1.4; }
+        .welcome-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; max-width: 450px; width: 80%; }
+        h1 { color: #2c3e50; margin-bottom: 10px; font-size: 1.8rem; }
+        p { color: #7f8c8d; margin-bottom: 25px; line-height: 1.5; font-size: 0.95rem; }
         #start-btn { 
-            padding: 15px 40px; background: #2e7d32; 
-            color: white; border-radius: 50px; border: none;
-            font-weight: bold; font-size: 1.2rem; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(46,125,50,0.3);
+            padding: 12px 30px; background: #3498db; 
+            color: white; border-radius: 6px; border: none;
+            font-weight: bold; font-size: 1rem; cursor: pointer;
+            transition: background 0.2s; width: 100%;
         }
+        #start-btn:hover { background: #2980b9; }
+
+        /* Decoy Loading Screen */
+        #loader-box { display: none; margin-top: 20px; width: 100%; background: #eee; height: 6px; border-radius: 3px; overflow: hidden; }
+        #loader-bar { width: 0%; height: 100%; background: #3498db; transition: width 1.5s linear; }
 
         /* Hacker Elements */
         #hacker-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 1; display: none; }
-        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; display: none; }
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; display: none; opacity: 0.25; }
         
         #ui { 
             position: relative; z-index: 10; height: 100vh; display: none; 
@@ -36,34 +41,49 @@
             text-align: center;
         }
         
-        #hacked-text { font-size: clamp(1.5rem, 6vw, 4rem); color: #f00; font-weight: bold; margin-bottom: 10px; text-shadow: 0 0 30px #f00; padding: 20px; }
-        #timer { font-size: clamp(1rem, 4vw, 2.5rem); font-weight: bold; border: 4px solid #0f0; padding: 20px; background: rgba(0,0,0,0.9); box-shadow: 0 0 40px #0f0; }
-
-        /* Popup Box Style */
-        .popup-box {
-            position: absolute; padding: 8px 15px; background: black; border: 2px solid #0f0;
-            color: #0f0; font-family: 'Courier New', monospace; font-size: 13px; font-weight: bold;
-            z-index: 150; pointer-events: none; box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
-            text-transform: uppercase;
+        /* Glitch Animation for Text */
+        #hacked-text { 
+            font-size: clamp(1.8rem, 6vw, 4rem); color: #f00; font-weight: bold; margin-bottom: 15px; 
+            text-shadow: 0 0 20px #f00; padding: 20px; animation: glitch 0.3s infinite;
+        }
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
         }
 
-        /* Intense Flashing Green Strobe */
-        .strobe { animation: strobe-bg 0.1s infinite; }
+        #timer { font-size: clamp(1.2rem, 4vw, 2.5rem); font-weight: bold; border: 3px solid #f00; padding: 20px; background: rgba(0,0,0,0.95); box-shadow: 0 0 30px rgba(255,0,0,0.5); color: #fff; }
+
+        /* Realistic Window Terminal Popups */
+        .popup-box {
+            position: absolute; width: 280px; background: #000; border: 2px solid #f00;
+            color: #f00; font-family: 'Courier New', monospace; font-size: 12px;
+            z-index: 150; pointer-events: none; box-shadow: 0 10px 40px rgba(255, 0, 0, 0.4);
+        }
+        .popup-header { background: #f00; color: #000; padding: 4px 8px; font-weight: bold; text-transform: uppercase; display: flex; justify-content: space-between; }
+        .popup-body { padding: 15px 10px; font-weight: bold; }
+
+        /* Rapid Red Vignette Flash instead of blinding green */
+        .strobe { animation: strobe-bg 0.4s infinite; }
         @keyframes strobe-bg {
-            0% { background: black; }
-            50% { background: #00FF00; } 
-            100% { background: black; }
+            0% { box-shadow: inset 0 0 50px #000; }
+            50% { box-shadow: inset 0 0 150px rgba(255, 0, 0, 0.8); } 
+            100% { box-shadow: inset 0 0 50px #000; }
         }
     </style>
 </head>
 <body>
 
     <!-- Welcoming Intro Screen -->
-    <div id="start-overlay" onclick="triggerHack()">
+    <div id="start-overlay">
         <div class="welcome-box">
-            <h1>Personal Countdown Tool</h1>
-            <p>Welcome! This application will help you track the exact time remaining until your target date.</p>
-            <button id="start-btn">Click to Start Program</button>
+            <h1>System Integrity Sync</h1>
+            <p>Initialize to track and synchronize time variables relative to your main network terminal clock.</p>
+            <button id="start-btn" onclick="startLoading()">Initialize Sync</button>
+            <div id="loader-box"><div id="loader-bar"></div></div>
         </div>
     </div>
 
@@ -72,7 +92,7 @@
     <canvas id="m"></canvas>
 
     <div id="ui">
-        <div id="hacked-text">SYSTEM COMPROMISED<br>U R HACKED</div>
+        <div id="hacked-text">CRITICAL SYSTEM FAILURE<br>ALL FILES ENCRYPTED</div>
         <div id="timer">00d 00h 00m 00s</div>
     </div>
 
@@ -81,110 +101,163 @@
         const ctx = c.getContext("2d");
         const t = document.getElementById("timer");
         
-        let popupInterval;
-        let matrixInterval;
-        let countdownInterval;
+        let popupInterval, matrixInterval, countdownInterval, audioCtx, alarmOsc, glitchInterval;
+
+        // Visual builds suspense
+        function startLoading() {
+            document.getElementById("start-btn").style.display = "none";
+            document.getElementById("loader-box").style.display = "block";
+            setTimeout(() => { document.getElementById("loader-bar").style.width = "100%"; }, 50);
+            
+            // Fires chaos after 1.5s loading animation completes
+            setTimeout(triggerHack, 1500);
+        }
+
+        function initAudio() {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create a pulsing horror synth
+                alarmOsc = audioCtx.createOscillator();
+                let gainNode = audioCtx.createGain();
+                
+                alarmOsc.type = 'sawtooth';
+                alarmOsc.frequency.setValueAtTime(120, audioCtx.currentTime); 
+                
+                // Pulsing volume effect
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                setInterval(() => {
+                    if(!audioCtx) return;
+                    alarmOsc.frequency.setValueAtTime(Math.random() > 0.5 ? 90 : 160, audioCtx.currentTime);
+                }, 400);
+
+                alarmOsc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                alarmOsc.start();
+
+                // Occasional harsh glitch sweeps
+                glitchInterval = setInterval(() => {
+                    let glitchOsc = audioCtx.createOscillator();
+                    let glitchGain = audioCtx.createGain();
+                    glitchOsc.type = 'square';
+                    glitchOsc.frequency.setValueAtTime(Math.random() * 800 + 200, audioCtx.currentTime);
+                    glitchGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    glitchOsc.connect(glitchGain);
+                    glitchGain.connect(audioCtx.destination);
+                    glitchOsc.start();
+                    glitchOsc.stop(audioCtx.currentTime + 0.15);
+                }, 600);
+
+            } catch(e) { console.log("Audio failed to start"); }
+        }
 
         function triggerHack() {
-            // 1. Show Hacker UI
             document.getElementById("start-overlay").style.display = "none";
             document.getElementById("hacker-bg").style.display = "block";
             document.getElementById("ui").style.display = "flex";
             document.getElementById("m").style.display = "block";
             document.getElementById("hacker-bg").classList.add("strobe");
 
-            // 2. Fullscreen
+            // Request Fullscreen
             const doc = document.documentElement;
             if (doc.requestFullscreen) doc.requestFullscreen();
-            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
 
-            // 3. Start Loops
+            // Start Audio, Matrix background, countdowns and popups
+            initAudio();
             setupMatrix();
             startCountdown();
-            popupInterval = setInterval(createPopup, 300); // Spawns box every 0.3s
+            popupInterval = setInterval(createPopup, 250); 
         }
 
         function createPopup() {
             const box = document.createElement("div");
             box.className = "popup-box";
-            const msgs = ["ACCESSING CAMERA", "ENCRYPTING FILES", "IP: 192.168.1.1", "U R HACKED", "DOWNLOADING DATA", "WIPING DRIVE"];
-            box.innerText = msgs[Math.floor(Math.random() * msgs.length)];
             
-            // Random positioning
-            const x = Math.random() * (window.innerWidth - 150);
-            const y = Math.random() * (window.innerHeight - 50);
+            const titles = ["System Alert", "Kernel Panic", "Firewall Breach", "Data Leak Detected"];
+            const msgs = ["ACCESSING ROOT DIRECTORY...", "DOWNLOADING CAMERA_LOG.TXT", "DELETING ALL PARTITIONS...", "IP TRACKBACK LOGGED", "INJECTING TROJAN.EXE", "EXFILTRATING LOCAL DATA..."];
+            
+            const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+            const randomMsg = msgs[Math.floor(Math.random() * msgs.length)];
+
+            box.innerHTML = `
+                <div class="popup-header"><span>${randomTitle}</span><span>✕</span></div>
+                <div class="popup-body">> ${randomMsg}</div>
+            `;
+            
+            const x = Math.random() * (window.innerWidth - 280);
+            const y = Math.random() * (window.innerHeight - 100);
             box.style.left = x + "px";
             box.style.top = y + "px";
             
             document.body.appendChild(box);
-            
-            // Auto-cleanup popups every 3 seconds to avoid lag
-            setTimeout(() => { if(box) box.remove(); }, 3000);
+            setTimeout(() => { if(box) box.remove(); }, 2500);
         }
 
         function setupMatrix() {
             c.width = window.innerWidth;
             c.height = window.innerHeight;
-            const fontSize = 20;
+            const fontSize = 16;
             const columns = Math.floor(c.width / fontSize);
             const drops = Array(columns).fill(0);
 
             function draw() {
-                ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+                ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
                 ctx.fillRect(0, 0, c.width, c.height);
-                ctx.fillStyle = "#0f0"; 
+                ctx.fillStyle = "#f00"; // Red matrix flows over the background 
                 ctx.font = fontSize + "px monospace";
 
                 for (let i = 0; i < drops.length; i++) {
-                    const text = Math.random() > 0.5 ? "1" : "0";
+                    const text = String.fromCharCode(0x30A0 + Math.random() * 96); // Real Matrix Katakana characters
                     ctx.fillText(text, i * fontSize, drops[i] * fontSize);
                     if (drops[i] * fontSize > c.height && Math.random() > 0.975) drops[i] = 0;
                     drops[i]++;
                 }
             }
-            matrixInterval = setInterval(draw, 35);
+            matrixInterval = setInterval(draw, 30);
         }
 
         function startCountdown() {
-            const targetDate = new Date("May 19, 2026 00:00:00").getTime();
+            // Dynamically targets 3 days from right now so countdown never says 00:00:00
+            const targetDate = new Date().getTime() + (3 * 24 * 60 * 60 * 1000);
+            
             countdownInterval = setInterval(() => {
                 const now = new Date().getTime();
                 const diff = targetDate - now;
-                const d = Math.floor(diff / 86400000);
-                const h = Math.floor((diff % 86400000) / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
+                const d = String(Math.floor(diff / 86400000)).padStart(2, '0');
+                const h = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
+                const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+                const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
                 t.innerText = `${d}d ${h}h ${m}m ${s}s`;
             }, 1000);
         }
 
-        // THE "EVERYTHING GOES" ESCAPE BUTTON
+        // Emergency Safe Mode Escape Key
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
-                // 1. Stop all repeating scripts
                 clearInterval(popupInterval);
                 clearInterval(matrixInterval);
                 clearInterval(countdownInterval);
+                clearInterval(glitchInterval);
+                
+                // Kill synth audio instantly
+                if(alarmOsc) { alarmOsc.stop(); }
+                if(audioCtx) { audioCtx.close(); audioCtx = null; }
 
-                // 2. Remove all "Hacked" boxes immediately
                 const allPopups = document.querySelectorAll('.popup-box');
                 allPopups.forEach(box => box.remove());
 
-                // 3. Hide Hacker UI and reset background
                 document.getElementById("hacker-bg").style.display = "none";
                 document.getElementById("hacker-bg").classList.remove("strobe");
                 document.getElementById("ui").style.display = "none";
                 document.getElementById("m").style.display = "none";
 
-                // 4. Show the original welcome screen
+                // Reset overlay window
                 document.getElementById("start-overlay").style.display = "flex";
+                document.getElementById("start-btn").style.display = "block";
+                document.getElementById("loader-box").style.display = "none";
+                document.getElementById("loader-bar").style.width = "0%";
 
-                // 5. Exit Fullscreen
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
+                if (document.exitFullscreen) document.exitFullscreen();
             }
         });
 
